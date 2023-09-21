@@ -1,4 +1,5 @@
 use crate::asteroids_survivors::Drawable;
+use crate::asteroids_survivors::Scenic;
 use crate::asteroids_survivors::Updatable;
 
 pub mod game_over;
@@ -20,6 +21,17 @@ impl Updatable for Scene {
             Scene::Play(play) => play.update(),
             Scene::YouWin(you_win) => you_win.update(),
             Scene::GameOver(game_over) => game_over.update(),
+        }
+    }
+}
+
+impl Scenic for Scene {
+    fn transition(&self) -> Option<Scene> {
+        match self {
+            Scene::Home(home) => home.transition(),
+            Scene::Play(play) => play.transition(),
+            Scene::YouWin(you_win) => you_win.transition(),
+            Scene::GameOver(game_over) => game_over.transition(),
         }
     }
 }

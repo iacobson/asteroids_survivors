@@ -12,7 +12,10 @@ use crate::asteroids_survivors::Updatable;
 const SHIP_HEIGHT: f32 = 25.;
 const SHIP_BASE: f32 = 22.;
 
+// TODO: add collision with Math::circle and circle.overlaps(other_circle)
+
 pub struct Ship {
+    hull: i8,
     position: Vec2,
     rotation: f32,
     rotation_angle_per_sec: f32,
@@ -22,14 +25,18 @@ pub struct Ship {
 impl Ship {
     pub fn new() -> Self {
         Self {
+            hull: 100,
             position: Vec2::new(window::screen_width() / 2., window::screen_height() / 2.),
             rotation: 0.,
             rotation_angle_per_sec: 45.,
             velocity: Vec2::new(0., 0.),
         }
     }
+    pub fn is_destroyed(&self) -> bool {
+        self.hull <= 0
+    }
 
-    pub fn rotate(&mut self) {
+    fn rotate(&mut self) {
         let delta = time::get_frame_time();
 
         if input::is_key_down(input::KeyCode::Right) {
