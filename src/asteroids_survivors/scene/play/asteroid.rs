@@ -27,7 +27,7 @@ impl Asteroid {
                     / 2.,
             rotation: 0.,
             rotation_speed: rand::gen_range(-360., 360.),
-            velocity: Vec2::new(rand::gen_range(-1., 1.), rand::gen_range(-1., 1.)),
+            velocity: Vec2::new(rand::gen_range(-100., 100.), rand::gen_range(-100., 100.)),
             size: window::screen_width().min(window::screen_height()) / 10.,
             sides: rand::gen_range(3, 8),
         }
@@ -36,6 +36,11 @@ impl Asteroid {
     fn rotate(&mut self) {
         let delta = time::get_frame_time();
         self.rotation += self.rotation_speed * delta;
+    }
+
+    fn accelerate(&mut self) {
+        let delta = time::get_frame_time();
+        self.position += self.velocity * delta;
     }
 }
 
@@ -52,6 +57,7 @@ impl Positionable for Asteroid {
 impl Updatable for Asteroid {
     fn update(&mut self) {
         self.rotate();
+        self.accelerate();
     }
 }
 
