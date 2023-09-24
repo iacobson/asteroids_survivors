@@ -1,3 +1,5 @@
+use macroquad::camera;
+
 use crate::asteroids_survivors::scene::Scene;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
@@ -7,6 +9,7 @@ pub struct GameOver {}
 
 impl GameOver {
     pub fn new() -> Self {
+        camera::set_default_camera();
         Self {}
     }
 }

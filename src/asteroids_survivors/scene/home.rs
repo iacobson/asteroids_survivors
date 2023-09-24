@@ -1,3 +1,4 @@
+use macroquad::camera;
 use macroquad::color::colors;
 use macroquad::input;
 use macroquad::text;
@@ -18,6 +19,8 @@ pub struct Home {
 impl Home {
     pub fn new() -> Self {
         window::clear_background(colors::BLACK);
+        camera::set_default_camera();
+
         Self {
             start_game: false,
             title: String::from("Asteroids Survivors"),
