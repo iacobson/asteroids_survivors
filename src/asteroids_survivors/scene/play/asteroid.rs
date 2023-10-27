@@ -9,6 +9,7 @@ use crate::asteroids_survivors::scene::play::Positionable;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Updatable;
 
+#[derive(Debug)]
 pub struct Asteroid {
     position: Vec2,
     rotation: f32,
@@ -20,6 +21,7 @@ pub struct Asteroid {
 
 impl Asteroid {
     pub fn new(screen_center: &Vec2) -> Self {
+        let base_size = window::screen_width().min(window::screen_height());
         Self {
             position: *screen_center
                 + Vec2::new(rand::gen_range(-1., 1.), rand::gen_range(-1., 1.)).normalize()
@@ -28,10 +30,22 @@ impl Asteroid {
             rotation: 0.,
             rotation_speed: rand::gen_range(-360., 360.),
             velocity: Vec2::new(rand::gen_range(-100., 100.), rand::gen_range(-100., 100.)),
-            size: window::screen_width().min(window::screen_height()) / 10.,
-            sides: rand::gen_range(3, 8),
+            size: rand::gen_range(base_size / 6., base_size / 20.),
+            sides: rand::gen_range(4, 18),
         }
     }
+    // GETTERS
+
+    pub fn get_size(&self) -> f32 {
+        self.size
+    }
+
+    pub fn get_damage_dealt(&self) -> f32 {
+        let delta = time::get_frame_time();
+        self.size / 2. * delta
+    }
+
+    // SETTERS
 
     fn rotate(&mut self) {
         let delta = time::get_frame_time();

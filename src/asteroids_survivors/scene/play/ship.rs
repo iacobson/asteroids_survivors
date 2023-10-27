@@ -12,30 +12,50 @@ use crate::asteroids_survivors::scene::play::Positionable;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Updatable;
 
-const SHIP_HEIGHT: f32 = 25.;
-const SHIP_BASE: f32 = 22.;
-
 pub struct Ship {
-    hull: i8,
+    hull_points: f32,
     position: Vec2,
     rotation: f32,
     rotation_speed: f32,
     velocity: Vec2,
+    height: f32,
+    base: f32,
+    taking_damage: bool,
 }
 
 impl Ship {
     pub fn new() -> Self {
         Self {
-            hull: 100,
+            hull_points: 100.,
             position: Vec2::new(window::screen_width() / 2., window::screen_height() / 2.),
             rotation: 0.,
-            rotation_speed: 45.,
+            rotation_speed: 90.,
             velocity: Vec2::new(0., 0.),
+            height: 25.,
+            base: 22.,
+            taking_damage: false,
         }
     }
+
+    // GETTERS
+
     pub fn is_destroyed(&self) -> bool {
-        self.hull <= 0
+        self.hull_points <= 0.
     }
+
+    pub fn get_hull_points_display(&self) -> u8 {
+        self.hull_points as u8
+    }
+
+    pub fn get_height(&self) -> f32 {
+        self.height
+    }
+
+    pub fn get_taking_damage(&self) -> bool {
+        self.taking_damage
+    }
+
+    // SETTERS
 
     fn rotate(&mut self) {
         let delta = time::get_frame_time();
@@ -53,7 +73,7 @@ impl Ship {
         let rotation = self.rotation.to_radians();
 
         if input::is_key_down(input::KeyCode::Space) {
-            self.velocity += Vec2::new(rotation.sin(), -rotation.cos()) * delta;
+            self.velocity += Vec2::new(rotation.sin(), -rotation.cos()) * (delta + 0.01);
         }
 
         self.position += self.velocity;
@@ -69,6 +89,11 @@ impl Ship {
 
         camera::set_camera(&camera);
     }
+
+    pub fn take_damage(&mut self, damage: f32) {
+        self.hull_points -= damage;
+        self.taking_damage = true;
+    }
 }
 
 impl Positionable for Ship {
@@ -83,6 +108,7 @@ impl Positionable for Ship {
 
 impl Updatable for Ship {
     fn update(&mut self) {
+        self.taking_damage = false;
         self.rotate();
         self.accelerate();
     }
@@ -96,18 +122,22 @@ impl Drawable for Ship {
             ship_color = colors::SKYBLUE;
         }
 
+        if self.taking_damage {
+            ship_color = colors::RED;
+        }
+
         let rotation = self.rotation.to_radians();
         let v1 = Vec2::new(
-            self.position.x + rotation.sin() * SHIP_HEIGHT / 2.,
-            self.position.y - rotation.cos() * SHIP_HEIGHT / 2.,
+            self.position.x + rotation.sin() * self.height / 2.,
+            self.position.y - rotation.cos() * self.height / 2.,
         );
         let v2 = Vec2::new(
-            self.position.x - rotation.cos() * SHIP_BASE / 2. - rotation.sin() * SHIP_HEIGHT / 2.,
-            self.position.y - rotation.sin() * SHIP_BASE / 2. + rotation.cos() * SHIP_HEIGHT / 2.,
+            self.position.x - rotation.cos() * self.base / 2. - rotation.sin() * self.height / 2.,
+            self.position.y - rotation.sin() * self.base / 2. + rotation.cos() * self.height / 2.,
         );
         let v3 = Vec2::new(
-            self.position.x + rotation.cos() * SHIP_BASE / 2. - rotation.sin() * SHIP_HEIGHT / 2.,
-            self.position.y + rotation.sin() * SHIP_BASE / 2. + rotation.cos() * SHIP_HEIGHT / 2.,
+            self.position.x + rotation.cos() * self.base / 2. - rotation.sin() * self.height / 2.,
+            self.position.y + rotation.sin() * self.base / 2. + rotation.cos() * self.height / 2.,
         );
         shapes::draw_triangle_lines(v1, v2, v3, 2., ship_color);
     }
