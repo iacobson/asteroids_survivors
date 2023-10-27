@@ -1,4 +1,5 @@
 use macroquad::audio;
+use macroquad::audio::PlaySoundParams;
 use macroquad::audio::Sound;
 use macroquad::camera;
 use macroquad::camera::Camera2D;
@@ -23,6 +24,8 @@ pub struct Ship {
     height: f32,
     base: f32,
     taking_damage: bool,
+    accelerating: bool,
+    engine_sound_level: f32,
     assets: Assets,
 }
 
@@ -33,14 +36,12 @@ struct Assets {
 struct Sfx {
     engine_running: Sound,
     engine_stops: Sound,
-    engine_starts: Sound,
 }
 
 impl Assets {
     async fn new() -> Self {
         Self {
             sfx: Sfx {
-                engine_starts: audio::load_sound("engine_start.wav").await.unwrap(),
                 engine_running: audio::load_sound("engine.wav").await.unwrap(),
                 engine_stops: audio::load_sound("engine_stop.wav").await.unwrap(),
             },
@@ -59,6 +60,8 @@ impl Ship {
             height: 25.,
             base: 22.,
             taking_damage: false,
+            accelerating: false,
+            engine_sound_level: 0.2,
             assets: Assets::new().await,
         }
     }
@@ -100,7 +103,37 @@ impl Ship {
 
         if input::is_key_down(input::KeyCode::Space) {
             self.velocity += Vec2::new(rotation.sin(), -rotation.cos()) * (delta + 0.01);
-            audio::play_sound_once(&self.assets.sfx.engine_running);
+
+            if !self.accelerating {
+                audio::stop_sound(&self.assets.sfx.engine_stops);
+                audio::play_sound(
+                    &self.assets.sfx.engine_running,
+                    PlaySoundParams {
+                        looped: true,
+                        volume: self.engine_sound_level,
+                    },
+                );
+                self.accelerating = true;
+            }
+
+            if self.engine_sound_level < 2. {
+                self.engine_sound_level += 0.05 * delta;
+                audio::set_sound_volume(&self.assets.sfx.engine_running, self.engine_sound_level);
+            }
+        } else {
+            if self.accelerating {
+                audio::stop_sound(&self.assets.sfx.engine_running);
+                audio::play_sound(
+                    &self.assets.sfx.engine_stops,
+                    PlaySoundParams {
+                        looped: false,
+                        volume: self.engine_sound_level / 2.,
+                    },
+                );
+
+                self.accelerating = false;
+                self.engine_sound_level = 0.2;
+            }
         }
 
         self.position += self.velocity;
