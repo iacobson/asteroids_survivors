@@ -20,7 +20,7 @@ pub struct Asteroid {
 }
 
 impl Asteroid {
-    pub fn new(screen_center: &Vec2) -> Self {
+    pub async fn new(screen_center: &Vec2) -> Self {
         let base_size = window::screen_width().min(window::screen_height());
         Self {
             position: *screen_center

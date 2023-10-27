@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use macroquad::camera;
 use macroquad::color::colors;
 use macroquad::math::Vec2;
@@ -29,18 +31,18 @@ pub struct Play {
 }
 
 impl Play {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         camera::set_default_camera();
 
-        let ship = Ship::new();
+        let ship = Ship::new().await;
 
         let ship_position = ship.get_position();
 
         Self {
             asteroids: vec![
-                Asteroid::new(&ship_position),
-                Asteroid::new(&ship_position),
-                Asteroid::new(&ship_position),
+                Asteroid::new(&ship_position).await,
+                Asteroid::new(&ship_position).await,
+                Asteroid::new(&ship_position).await,
             ],
             ship: ship,
         }
@@ -87,10 +89,11 @@ impl Updatable for Play {
     }
 }
 
+#[async_trait]
 impl Scenic for Play {
-    fn transition(&self) -> Option<Scene> {
+    async fn transition(&self) -> Option<Scene> {
         if self.ship.is_destroyed() {
-            Some(Scene::GameOver(GameOver::new()))
+            Some(Scene::GameOver(GameOver::new().await))
         } else {
             None
         }

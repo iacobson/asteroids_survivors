@@ -1,3 +1,5 @@
+use macroquad::audio;
+use macroquad::audio::Sound;
 use macroquad::camera;
 use macroquad::camera::Camera2D;
 use macroquad::color::colors;
@@ -21,10 +23,33 @@ pub struct Ship {
     height: f32,
     base: f32,
     taking_damage: bool,
+    assets: Assets,
+}
+
+struct Assets {
+    sfx: Sfx,
+}
+
+struct Sfx {
+    engine_running: Sound,
+    engine_stops: Sound,
+    engine_starts: Sound,
+}
+
+impl Assets {
+    async fn new() -> Self {
+        Self {
+            sfx: Sfx {
+                engine_starts: audio::load_sound("engine_start.wav").await.unwrap(),
+                engine_running: audio::load_sound("engine.wav").await.unwrap(),
+                engine_stops: audio::load_sound("engine_stop.wav").await.unwrap(),
+            },
+        }
+    }
 }
 
 impl Ship {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         Self {
             hull_points: 100.,
             position: Vec2::new(window::screen_width() / 2., window::screen_height() / 2.),
@@ -34,6 +59,7 @@ impl Ship {
             height: 25.,
             base: 22.,
             taking_damage: false,
+            assets: Assets::new().await,
         }
     }
 
@@ -74,6 +100,7 @@ impl Ship {
 
         if input::is_key_down(input::KeyCode::Space) {
             self.velocity += Vec2::new(rotation.sin(), -rotation.cos()) * (delta + 0.01);
+            audio::play_sound_once(&self.assets.sfx.engine_running);
         }
 
         self.position += self.velocity;

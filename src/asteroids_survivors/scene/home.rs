@@ -6,6 +6,8 @@ use macroquad::window;
 
 use crate::asteroids_survivors::scene::play::Play;
 use crate::asteroids_survivors::scene::Scene;
+use async_trait::async_trait;
+
 use crate::asteroids_survivors::util;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
@@ -17,7 +19,7 @@ pub struct Home {
     title_font_size: f32,
 }
 impl Home {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         window::clear_background(colors::BLACK);
         camera::set_default_camera();
 
@@ -37,10 +39,11 @@ impl Updatable for Home {
     }
 }
 
+#[async_trait]
 impl Scenic for Home {
-    fn transition(&self) -> Option<Scene> {
+    async fn transition(&self) -> Option<Scene> {
         if self.start_game {
-            Some(Scene::Play(Play::new()))
+            Some(Scene::Play(Play::new().await))
         } else {
             None
         }

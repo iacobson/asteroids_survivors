@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use macroquad::camera;
 use macroquad::color::colors;
 use macroquad::input;
@@ -18,7 +20,7 @@ pub struct GameOver {
 }
 
 impl GameOver {
-    pub fn new() -> Self {
+    pub async fn new() -> Self {
         window::clear_background(colors::BLACK);
         camera::set_default_camera();
         Self {
@@ -37,10 +39,11 @@ impl Updatable for GameOver {
     }
 }
 
+#[async_trait]
 impl Scenic for GameOver {
-    fn transition(&self) -> Option<Scene> {
+    async fn transition(&self) -> Option<Scene> {
         if self.home {
-            Some(Scene::Home(Home::new()))
+            Some(Scene::Home(Home::new().await))
         } else {
             None
         }
