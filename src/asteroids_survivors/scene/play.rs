@@ -4,7 +4,10 @@ use macroquad::camera;
 use macroquad::color::colors;
 use macroquad::math::Vec2;
 use macroquad::text;
+use macroquad::time;
 use macroquad::window;
+use rayon::prelude::IntoParallelRefMutIterator;
+use rayon::prelude::ParallelIterator;
 
 use crate::asteroids_survivors::util;
 
@@ -13,6 +16,8 @@ use crate::asteroids_survivors::scene::Scene;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
 use crate::asteroids_survivors::Updatable;
+
+use crate::asteroids_survivors::Frame;
 
 use self::asteroid::Asteroid;
 use self::ship::Ship;
@@ -28,6 +33,9 @@ pub trait Positionable {
 pub struct Play {
     ship: Ship,
     asteroids: Vec<Asteroid>,
+    fps: u16,
+    fps_acc: u16,
+    timer_second: u16,
 }
 
 impl Play {
@@ -45,6 +53,23 @@ impl Play {
                 Asteroid::new(&ship_position).await,
             ],
             ship: ship,
+            fps: 0,
+            fps_acc: 0,
+            timer_second: 0,
+        }
+    }
+
+    fn calculate_fps(&mut self) {
+        let delta_ms = (time::get_frame_time() * 1000.) as u16;
+
+        self.timer_second += delta_ms;
+
+        if self.timer_second >= 1000 {
+            self.fps = self.fps_acc;
+            self.fps_acc = 0;
+            self.timer_second = self.timer_second - 1000;
+        } else {
+            self.fps_acc += 1;
         }
     }
 
@@ -69,16 +94,32 @@ impl Play {
             text_color,
         );
     }
+
+    fn draw_fps(&self) {
+        let fps = self.fps;
+        let text = format!("{} FPS", fps);
+        let text_size = util::text_size(&text, 24.0);
+
+        let screen_center = self.ship.get_position();
+        text::draw_text(
+            &text,
+            screen_center.x + window::screen_width() / 2. - text_size.width - 10.,
+            screen_center.y + window::screen_height() / 2. - text_size.height - 10.,
+            24.0,
+            colors::WHITE,
+        );
+    }
 }
 
 impl Updatable for Play {
-    fn update(&mut self) {
-        self.ship.update();
+    fn update(&mut self, frame: &Frame) {
+        self.calculate_fps();
+        self.ship.update(frame);
 
-        for asteroid in &mut self.asteroids {
-            asteroid.update();
-            asteroid_wrap_around(self.ship.get_position(), asteroid)
-        }
+        self.asteroids.par_iter_mut().for_each(|asteroid| {
+            asteroid.update(frame);
+            asteroid_wrap_around(self.ship.get_position(), asteroid, frame)
+        });
 
         for asteroid in &mut self.asteroids {
             if ship_colides_with_asteroid(&self.ship, asteroid) {
@@ -109,26 +150,27 @@ impl Drawable for Play {
         }
 
         self.draw_hull_points();
+        self.draw_fps();
     }
 }
 
-fn asteroid_wrap_around(screen_center: Vec2, asteroid: &mut Asteroid) {
+fn asteroid_wrap_around(screen_center: Vec2, asteroid: &mut Asteroid, frame: &Frame) {
     let mut vr = asteroid.get_position();
 
-    if vr.x > screen_center.x + window::screen_width() / 2. {
-        vr.x = screen_center.x - window::screen_width() / 2.;
+    if vr.x > screen_center.x + frame.screen_width / 2. {
+        vr.x = screen_center.x - frame.screen_width / 2.;
     }
 
-    if vr.x < screen_center.x - window::screen_width() / 2. {
-        vr.x = screen_center.x + window::screen_width() / 2.;
+    if vr.x < screen_center.x - frame.screen_width / 2. {
+        vr.x = screen_center.x + frame.screen_width / 2.;
     }
 
-    if vr.y > screen_center.y + window::screen_height() / 2. {
-        vr.y = screen_center.y - window::screen_height() / 2.;
+    if vr.y > screen_center.y + frame.screen_height / 2. {
+        vr.y = screen_center.y - frame.screen_height / 2.;
     }
 
-    if vr.y < screen_center.y - window::screen_height() / 2. {
-        vr.y = screen_center.y + window::screen_height() / 2.;
+    if vr.y < screen_center.y - frame.screen_height / 2. {
+        vr.y = screen_center.y + frame.screen_height / 2.;
     }
 
     asteroid.set_position(vr);

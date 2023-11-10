@@ -15,6 +15,8 @@ use crate::asteroids_survivors::scene::play::Positionable;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Updatable;
 
+use crate::asteroids_survivors::Frame;
+
 pub struct Ship {
     hull_points: f32,
     position: Vec2,
@@ -69,7 +71,12 @@ impl Ship {
     // GETTERS
 
     pub fn is_destroyed(&self) -> bool {
-        self.hull_points <= 0.
+        if self.hull_points <= 0. {
+            audio::stop_sound(&self.assets.sfx.engine_running);
+            true
+        } else {
+            false
+        }
     }
 
     pub fn get_hull_points_display(&self) -> u8 {
@@ -167,7 +174,7 @@ impl Positionable for Ship {
 }
 
 impl Updatable for Ship {
-    fn update(&mut self) {
+    fn update(&mut self, _frame: &Frame) {
         self.taking_damage = false;
         self.rotate();
         self.accelerate();

@@ -13,6 +13,8 @@ use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
 use crate::asteroids_survivors::Updatable;
 
+use crate::asteroids_survivors::Frame;
+
 pub struct Home {
     start_game: bool,
     title: String,
@@ -32,7 +34,7 @@ impl Home {
 }
 
 impl Updatable for Home {
-    fn update(&mut self) {
+    fn update(&mut self, _frame: &Frame) {
         if input::is_key_pressed(input::KeyCode::Enter) {
             self.start_game = true;
         }

@@ -6,8 +6,11 @@ use asteroids_survivors::Drawable;
 use asteroids_survivors::Scenic;
 use asteroids_survivors::Updatable;
 
+use asteroids_survivors::Frame;
+
 use macroquad::color::colors;
 use macroquad::file::set_pc_assets_folder;
+use macroquad::time;
 use macroquad::window;
 
 mod asteroids_survivors;
@@ -20,7 +23,13 @@ async fn main() {
     let mut current_scene = Scene::Home(Home::new().await);
 
     loop {
-        current_scene.update();
+        let frame = Frame {
+            delta: time::get_frame_time(),
+            screen_width: window::screen_width(),
+            screen_height: window::screen_height(),
+        };
+
+        current_scene.update(&frame);
         current_scene.draw();
 
         if let Some(next_scene) = current_scene.transition().await {

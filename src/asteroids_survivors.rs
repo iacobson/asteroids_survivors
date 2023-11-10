@@ -6,9 +6,15 @@ use crate::Scene;
 pub mod scene;
 pub mod util;
 
+pub struct Frame {
+    pub delta: f32,
+    pub screen_width: f32,
+    pub screen_height: f32,
+}
+
 // TRAITS
 pub trait Updatable {
-    fn update(&mut self);
+    fn update(&mut self, frame: &Frame);
 }
 pub trait Drawable {
     fn draw(&self);

@@ -7,6 +7,8 @@ use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
 use crate::asteroids_survivors::Updatable;
 
+use crate::asteroids_survivors::Frame;
+
 pub struct YouWin {}
 
 impl YouWin {
@@ -17,7 +19,7 @@ impl YouWin {
 }
 
 impl Updatable for YouWin {
-    fn update(&mut self) {}
+    fn update(&mut self, _frame: &Frame) {}
 }
 
 #[async_trait]

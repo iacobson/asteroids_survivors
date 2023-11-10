@@ -4,6 +4,8 @@ use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Scenic;
 use crate::asteroids_survivors::Updatable;
 
+use crate::asteroids_survivors::Frame;
+
 pub mod game_over;
 pub mod home;
 pub mod play;
@@ -17,12 +19,12 @@ pub enum Scene {
 }
 
 impl Updatable for Scene {
-    fn update(&mut self) {
+    fn update(&mut self, frame: &Frame) {
         match self {
-            Scene::Home(home) => home.update(),
-            Scene::Play(play) => play.update(),
-            Scene::YouWin(you_win) => you_win.update(),
-            Scene::GameOver(game_over) => game_over.update(),
+            Scene::Home(home) => home.update(frame),
+            Scene::Play(play) => play.update(frame),
+            Scene::YouWin(you_win) => you_win.update(frame),
+            Scene::GameOver(game_over) => game_over.update(frame),
         }
     }
 }

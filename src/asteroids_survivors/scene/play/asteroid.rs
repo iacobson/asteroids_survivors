@@ -9,6 +9,8 @@ use crate::asteroids_survivors::scene::play::Positionable;
 use crate::asteroids_survivors::Drawable;
 use crate::asteroids_survivors::Updatable;
 
+use crate::asteroids_survivors::Frame;
+
 #[derive(Debug)]
 pub struct Asteroid {
     position: Vec2,
@@ -47,13 +49,11 @@ impl Asteroid {
 
     // SETTERS
 
-    fn rotate(&mut self) {
-        let delta = time::get_frame_time();
+    fn rotate(&mut self, delta: f32) {
         self.rotation += self.rotation_speed * delta;
     }
 
-    fn accelerate(&mut self) {
-        let delta = time::get_frame_time();
+    fn accelerate(&mut self, delta: f32) {
         self.position += self.velocity * delta;
     }
 }
@@ -69,9 +69,9 @@ impl Positionable for Asteroid {
 }
 
 impl Updatable for Asteroid {
-    fn update(&mut self) {
-        self.rotate();
-        self.accelerate();
+    fn update(&mut self, frame: &Frame) {
+        self.rotate(frame.delta);
+        self.accelerate(frame.delta);
     }
 }
 
